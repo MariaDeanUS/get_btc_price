@@ -1,0 +1,30 @@
+import requests
+from telegram.ext import Updater, CommandHandler
+
+# Замените на ваш токен бота
+TOKEN = 'YOUR_TELEGRAM_BOT_TOKEN'
+
+def start(update, context):
+    update.message.reply_text('Привет! Я финансовый бот. Напишите /btc для получения текущего курса Bitcoin.')
+
+def get_btc_price(update, context):
+    # Получаем текущий курс Bitcoin через API CoinGecko
+    response = requests.get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd')
+    if response.status_code == 200:
+        btc_price = response.json()['bitcoin']['usd']
+        update.message.reply_text(f'Текущий курс Bitcoin (BTC) к USD: ${btc_price}')
+    else:
+        update.message.reply_text('Не удалось получить информацию о курсе Bitcoin. Попробуйте позже.')
+
+def main():
+    updater = Updater(TOKEN, use_context=True)
+    dp = updater.dispatcher
+
+    dp.add_handler(CommandHandler('start', start))
+    dp.add_handler(CommandHandler('btc', get_btc_price))
+
+    updater.start_polling()
+    updater.idle()
+
+if __name__ == '__main__':
+    main()
